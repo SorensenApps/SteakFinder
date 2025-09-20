@@ -1,102 +1,164 @@
-import Image from "next/image";
+'use client';
+
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { MapPin, Utensils, Navigation } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  const handleFindSteakhouses = async () => {
+    setIsLoading(true);
+    
+    // Check if geolocation is supported
+    if (!navigator.geolocation) {
+      alert('Geolocation is not supported by this browser. Please enable location services or use a different browser.');
+      setIsLoading(false);
+      return;
+    }
+
+    // Get user's current position
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        // Navigate to results page with coordinates
+        router.push(`/results?lat=${latitude}&lng=${longitude}`);
+      },
+      (error) => {
+        console.error('Error getting location:', error);
+        let errorMessage = 'Unable to get your location. ';
+        
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            errorMessage += 'Please enable location services and allow access to your location.';
+            break;
+          case error.POSITION_UNAVAILABLE:
+            errorMessage += 'Location information is unavailable.';
+            break;
+          case error.TIMEOUT:
+            errorMessage += 'Location request timed out.';
+            break;
+          default:
+            errorMessage += 'An unknown error occurred.';
+            break;
+        }
+        
+        alert(errorMessage);
+        setIsLoading(false);
+      }
+    );
+  };
+
+  return (
+    <div className="min-h-screen bg-black text-white">
+      {/* Header */}
+      <header className="container mx-auto px-4 py-8">
+        <div className="flex items-center justify-center space-x-3">
+          <Utensils className="h-8 w-8 text-primary" />
+          <h1 className="text-4xl font-bold text-primary">SteakFinder</h1>
+          <span className="text-4xl">🥩</span>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="container mx-auto px-4 py-12">
+        <div className="max-w-2xl mx-auto text-center space-y-8">
+          {/* Hero Section */}
+          <div className="space-y-6">
+            <h2 className="text-5xl font-bold text-white">
+              Find Your Nearest <span className="text-primary">Steak Fix</span>
+            </h2>
+            <p className="text-xl text-muted-foreground">
+              Discover steakhouses, Brazilian BBQ, Korean BBQ, Argentine grills, American BBQ, and more near you. 
+              Perfect for your keto and carnivore lifestyle.
+            </p>
+          </div>
+
+          {/* CTA Button */}
+          <div className="py-8">
+            <Button
+              onClick={handleFindSteakhouses}
+              disabled={isLoading}
+              size="lg"
+              className="bg-primary hover:bg-primary/90 active:bg-primary/95 text-white px-16 py-8 text-xl font-bold rounded-2xl shadow-2xl border-2 border-primary/20 hover:border-primary/40 transition-all duration-300 transform hover:scale-105 active:scale-95 min-w-[320px]"
+            >
+              {isLoading ? (
+                <div className="flex items-center space-x-3">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
+                  <span className="text-xl">Finding Steakhouses...</span>
+                </div>
+              ) : (
+                <div className="flex items-center space-x-3">
+                  <MapPin className="h-6 w-6" />
+                  <span className="text-xl">Find Steakhouses Near Me</span>
+                </div>
+              )}
+            </Button>
+          </div>
+
+          {/* Features */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-16">
+            <Card className="bg-card border-border">
+              <CardHeader className="text-center">
+                <div className="mx-auto w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
+                  <MapPin className="h-6 w-6 text-primary" />
+                </div>
+                <CardTitle className="text-white">Location-Based</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <CardDescription className="text-muted-foreground">
+                  Find the closest steakhouses using your GPS location for accurate results.
+                </CardDescription>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-card border-border">
+              <CardHeader className="text-center">
+                <div className="mx-auto w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
+                  <Utensils className="h-6 w-6 text-primary" />
+                </div>
+                <CardTitle className="text-white">Diverse Options</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <CardDescription className="text-muted-foreground">
+                  From traditional steakhouses to Brazilian BBQ, Korean BBQ, and American BBQ - we&apos;ve got you covered.
+                </CardDescription>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-card border-border">
+              <CardHeader className="text-center">
+                <div className="mx-auto w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
+                  <Navigation className="h-6 w-6 text-primary" />
+                </div>
+                <CardTitle className="text-white">Easy Navigation</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <CardDescription className="text-muted-foreground">
+                  Get directions instantly with integrated Google Maps navigation.
+                </CardDescription>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
+
+      {/* Footer */}
+      <footer className="container mx-auto px-4 py-8 mt-16 border-t border-border">
+        <div className="text-center text-muted-foreground">
+          <p className="mb-4">Part of the TravelKeto.ai family</p>
+          <a 
+            href="https://travelketo.ai" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="text-primary hover:underline"
+          >
+            Visit TravelKeto.ai →
+          </a>
+        </div>
       </footer>
     </div>
   );
