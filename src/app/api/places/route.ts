@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-Goog-FieldMask': 'places.displayName,places.id,places.rating,places.priceLevel,places.formattedAddress,places.types,places.photos'
+        'X-Goog-FieldMask': 'places.displayName,places.id,places.rating,places.priceLevel,places.formattedAddress,places.types,places.photos,places.location'
       },
       body: JSON.stringify(requestBody)
     });

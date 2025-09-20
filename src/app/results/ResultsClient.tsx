@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, MapPin, Navigation, Star } from 'lucide-react';
+import MapView from '@/components/MapView';
 
 interface Restaurant {
   id: string;
@@ -16,6 +17,8 @@ interface Restaurant {
   placeId: string;
   types: string[];
   photos?: unknown[];
+  lat?: number;
+  lng?: number;
   openingHours?: {
     openNow: boolean;
     weekdayText: string[];
@@ -35,6 +38,12 @@ interface GooglePlaceNew {
   vicinity?: string;
   types?: string[];
   photos?: unknown[];
+  location?: {
+    latitude: number;
+    longitude: number;
+  };
+  lat?: number;
+  lng?: number;
 }
 
 const restaurantTypes = [
@@ -133,6 +142,8 @@ export default function ResultsClient() {
             placeId: place.id || place.place_id,
             types: place.types || [],
             photos: place.photos || [],
+            lat: place.location?.latitude || place.lat,
+            lng: place.location?.longitude || place.lng,
           }));
           
           allRestaurants.push(...restaurants);
@@ -292,7 +303,7 @@ export default function ResultsClient() {
             {/* Restaurant Cards */}
             <div className="space-y-4">
               {filteredRestaurants.map((restaurant) => (
-                <Card key={restaurant.id} className="bg-card border-border">
+                <Card key={restaurant.id} id={`restaurant-${restaurant.id}`} className="bg-card border-border">
                   <CardHeader>
                     <div className="flex items-start justify-between">
                       <div>
@@ -367,24 +378,25 @@ export default function ResultsClient() {
             )}
           </div>
 
-          {/* Map Placeholder */}
+          {/* Interactive Map */}
           <div className="lg:col-span-1">
             <Card className="bg-card border-border sticky top-8">
               <CardHeader>
                 <CardTitle className="text-white">Map View</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="aspect-square bg-muted rounded-lg flex items-center justify-center">
-                  <div className="text-center space-y-2">
-                    <MapPin className="h-12 w-12 text-muted-foreground mx-auto" />
-                    <p className="text-muted-foreground">
-                      Interactive map will be displayed here
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      Requires Google Maps API key
-                    </p>
-                  </div>
-                </div>
+                <MapView
+                  restaurants={filteredRestaurants}
+                  userLat={parseFloat(lat!)}
+                  userLng={parseFloat(lng!)}
+                  onRestaurantClick={(restaurant) => {
+                    // Scroll to restaurant card
+                    const element = document.getElementById(`restaurant-${restaurant.id}`);
+                    if (element) {
+                      element.scrollIntoView({ behavior: 'smooth' });
+                    }
+                  }}
+                />
               </CardContent>
             </Card>
           </div>
