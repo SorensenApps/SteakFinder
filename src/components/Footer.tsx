@@ -55,7 +55,7 @@ export default function Footer() {
                 </div>
                 <h4 className="font-semibold text-primary mb-2">Shop Merch</h4>
                 <p className="text-sm text-secondary mb-4">
-                  Get TravelKeto.ai branded merchandise
+                  Shop our carnivore-proud merch!
                 </p>
                 <Button 
                   asChild
