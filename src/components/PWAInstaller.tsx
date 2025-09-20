@@ -17,9 +17,10 @@ export default function PWAInstaller() {
       });
     }
 
-    // Handle PWA install prompt
+    // Handle PWA install prompt (let browser handle naturally)
     window.addEventListener('beforeinstallprompt', (e) => {
-      e.preventDefault();
+      // Don't prevent default - let browser show install banner
+      console.log('PWA install prompt available');
     });
 
     window.addEventListener('appinstalled', () => {

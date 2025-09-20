@@ -5,8 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, MapPin, Navigation, Star } from 'lucide-react';
-import MapView from '@/components/MapView';
+import { ArrowLeft, MapPin, Navigation, Star, Check } from 'lucide-react';
 
 interface Restaurant {
   id: string;
@@ -19,6 +18,8 @@ interface Restaurant {
   photos?: unknown[];
   lat?: number;
   lng?: number;
+  distance?: number;
+  useMiles?: boolean;
   openingHours?: {
     openNow: boolean;
     weekdayText: string[];
@@ -53,6 +54,36 @@ const restaurantTypes = [
   { key: 'argentine', label: 'Argentine Grill', icon: '🇦🇷' },
   { key: 'american', label: 'American BBQ', icon: '🇺🇸' },
 ];
+
+// Haversine formula to calculate distance between two points
+const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
+  const R = 6371; // Radius of the Earth in kilometers
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = 
+    Math.sin(dLat/2) * Math.sin(dLat/2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+    Math.sin(dLon/2) * Math.sin(dLon/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  return R * c; // Distance in kilometers
+};
+
+// Convert kilometers to miles
+const kmToMiles = (km: number): number => {
+  return km * 0.621371;
+};
+
+// Check if user is in a country that uses miles (US, UK, etc.)
+const isMilesCountry = (latitude: number, longitude: number): boolean => {
+  // US coordinates roughly: 24.396308 to 49.384358 lat, -125.000000 to -66.934570 lng
+  // UK coordinates roughly: 49.959999 to 60.860000 lat, -8.180000 to 1.760000 lng
+  const isUS = latitude >= 24.396308 && latitude <= 49.384358 && 
+               longitude >= -125.000000 && longitude <= -66.934570;
+  const isUK = latitude >= 49.959999 && latitude <= 60.860000 && 
+               longitude >= -8.180000 && longitude <= 1.760000;
+  
+  return isUS || isUK;
+};
 
 export default function ResultsClient() {
   const searchParams = useSearchParams();
@@ -160,70 +191,112 @@ export default function ResultsClient() {
       }
     }
 
-    // Remove duplicates and sort by rating
+    // Remove duplicates
     const uniqueRestaurants = allRestaurants.filter((restaurant, index, self) => 
       index === self.findIndex(r => r.placeId === restaurant.placeId)
     );
 
-    return uniqueRestaurants.sort((a, b) => b.rating - a.rating);
+    // Calculate distance and sort by distance, then limit to 10
+    const useMiles = isMilesCountry(latitude, longitude);
+    const restaurantsWithDistance = uniqueRestaurants.map(restaurant => {
+      if (restaurant.lat && restaurant.lng) {
+        const distanceKm = calculateDistance(latitude, longitude, restaurant.lat, restaurant.lng);
+        const distance = useMiles ? kmToMiles(distanceKm) : distanceKm;
+        return { ...restaurant, distance, useMiles };
+      }
+      return { ...restaurant, distance: Infinity, useMiles };
+    });
+
+    return restaurantsWithDistance
+      .sort((a, b) => a.distance - b.distance)
+      .slice(0, 10);
   };
 
-  const getMockRestaurants = (): Restaurant[] => [
-    {
-      id: '1',
-      name: 'Prime Steakhouse',
-      rating: 4.8,
-      priceLevel: 4,
-      vicinity: '123 Main St, Downtown',
-      placeId: 'mock1',
-      types: ['restaurant', 'steakhouse'],
-    },
-    {
-      id: '2',
-      name: 'Fogo de Chão',
-      rating: 4.6,
-      priceLevel: 4,
-      vicinity: '456 Oak Ave, Midtown',
-      placeId: 'mock2',
-      types: ['restaurant', 'brazilian'],
-    },
-    {
-      id: '3',
-      name: 'Gen Korean BBQ',
-      rating: 4.4,
-      priceLevel: 3,
-      vicinity: '789 Pine St, Uptown',
-      placeId: 'mock3',
-      types: ['restaurant', 'korean'],
-    },
-    {
-      id: '4',
-      name: 'La Parilla Argentina',
-      rating: 4.7,
-      priceLevel: 3,
-      vicinity: '321 Elm St, Eastside',
-      placeId: 'mock4',
-      types: ['restaurant', 'argentine'],
-    },
-    {
-      id: '5',
-      name: 'Franklin Barbecue',
-      rating: 4.9,
-      priceLevel: 3,
-      vicinity: '900 E 11th St, East Austin',
-      placeId: 'mock5',
-      types: ['restaurant', 'american'],
-    },
-    {
-      id: '6',
-      name: 'Joe\'s Kansas City Bar-B-Que',
-      rating: 4.5,
-      priceLevel: 2,
-      vicinity: '3002 W 47th Ave, Kansas City',
-      placeId: 'mock6',
-      types: ['restaurant', 'american'],
-    },
-  ];
+  const getMockRestaurants = (): Restaurant[] => {
+    const userLat = parseFloat(lat!);
+    const userLng = parseFloat(lng!);
+    
+    const mockData = [
+      {
+        id: '1',
+        name: 'Prime Steakhouse',
+        rating: 4.8,
+        priceLevel: 4,
+        vicinity: '123 Main St, Downtown',
+        placeId: 'mock1',
+        types: ['restaurant', 'steakhouse'],
+        lat: userLat + 0.001,
+        lng: userLng + 0.001,
+      },
+      {
+        id: '2',
+        name: 'Fogo de Chão',
+        rating: 4.6,
+        priceLevel: 4,
+        vicinity: '456 Oak Ave, Midtown',
+        placeId: 'mock2',
+        types: ['restaurant', 'brazilian'],
+        lat: userLat + 0.002,
+        lng: userLng - 0.001,
+      },
+      {
+        id: '3',
+        name: 'Gen Korean BBQ',
+        rating: 4.4,
+        priceLevel: 3,
+        vicinity: '789 Pine St, Uptown',
+        placeId: 'mock3',
+        types: ['restaurant', 'korean'],
+        lat: userLat - 0.001,
+        lng: userLng + 0.002,
+      },
+      {
+        id: '4',
+        name: 'La Parilla Argentina',
+        rating: 4.7,
+        priceLevel: 3,
+        vicinity: '321 Elm St, Eastside',
+        placeId: 'mock4',
+        types: ['restaurant', 'argentine'],
+        lat: userLat + 0.003,
+        lng: userLng + 0.003,
+      },
+      {
+        id: '5',
+        name: 'Franklin Barbecue',
+        rating: 4.9,
+        priceLevel: 3,
+        vicinity: '900 E 11th St, East Austin',
+        placeId: 'mock5',
+        types: ['restaurant', 'american'],
+        lat: userLat - 0.002,
+        lng: userLng - 0.002,
+      },
+      {
+        id: '6',
+        name: 'Joe\'s Kansas City Bar-B-Que',
+        rating: 4.5,
+        priceLevel: 2,
+        vicinity: '3002 W 47th Ave, Kansas City',
+        placeId: 'mock6',
+        types: ['restaurant', 'american'],
+        lat: userLat + 0.004,
+        lng: userLng - 0.003,
+      },
+    ];
+
+    // Calculate distances and sort by distance, then limit to 10
+    const useMiles = isMilesCountry(userLat, userLng);
+    const restaurantsWithDistance = mockData.map(restaurant => {
+      const distanceKm = calculateDistance(userLat, userLng, restaurant.lat!, restaurant.lng!);
+      const distance = useMiles ? kmToMiles(distanceKm) : distanceKm;
+      return { ...restaurant, distance, useMiles };
+    });
+
+    return restaurantsWithDistance
+      .sort((a, b) => a.distance - b.distance)
+      .slice(0, 10);
+  };
 
   const getRestaurantType = (types: string[]): string => {
     if (types.some(type => type.includes('brazilian'))) return 'brazilian';
@@ -236,6 +309,7 @@ export default function ResultsClient() {
   const filteredRestaurants = selectedType === 'all' 
     ? restaurants 
     : restaurants.filter(restaurant => getRestaurantType(restaurant.types) === selectedType);
+
 
   const getDirectionsUrl = (placeId: string, name: string) => {
     return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(name)}&destination_place_id=${placeId}`;
@@ -271,25 +345,27 @@ export default function ResultsClient() {
       </header>
 
       <div className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="max-w-4xl mx-auto">
           {/* Filters and Results */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="space-y-6">
             {/* Filter Chips */}
             <div className="flex flex-wrap gap-2">
               <Badge
                 variant={selectedType === 'all' ? 'default' : 'outline'}
-                className="cursor-pointer hover:bg-primary/10"
+                className="cursor-pointer hover:bg-primary/10 flex items-center gap-1"
                 onClick={() => setSelectedType('all')}
               >
+                {selectedType === 'all' && <Check className="h-3 w-3" />}
                 All Types
               </Badge>
               {restaurantTypes.map((type) => (
                 <Badge
                   key={type.key}
                   variant={selectedType === type.key ? 'default' : 'outline'}
-                  className="cursor-pointer hover:bg-primary/10"
+                  className="cursor-pointer hover:bg-primary/10 flex items-center gap-1"
                   onClick={() => setSelectedType(type.key)}
                 >
+                  {selectedType === type.key && <Check className="h-3 w-3" />}
                   {type.icon} {type.label}
                 </Badge>
               ))}
@@ -297,7 +373,7 @@ export default function ResultsClient() {
 
             {/* Results Count */}
             <p className="text-muted-foreground">
-              Found {filteredRestaurants.length} restaurant{filteredRestaurants.length !== 1 ? 's' : ''}
+              Found {filteredRestaurants.length} restaurant{filteredRestaurants.length !== 1 ? 's' : ''} within 10{filteredRestaurants[0]?.useMiles ? 'mi' : 'km'}
             </p>
 
             {/* Restaurant Cards */}
@@ -311,6 +387,11 @@ export default function ResultsClient() {
                         <CardDescription className="text-muted-foreground mt-1">
                           <MapPin className="h-4 w-4 inline mr-1" />
                           {restaurant.vicinity}
+                          {restaurant.distance && (
+                            <span className="ml-2 text-primary">
+                              • {restaurant.distance.toFixed(1)}{restaurant.useMiles ? 'mi' : 'km'} away
+                            </span>
+                          )}
                         </CardDescription>
                       </div>
                       <div className="text-right">
@@ -376,29 +457,6 @@ export default function ResultsClient() {
                 </CardContent>
               </Card>
             )}
-          </div>
-
-          {/* Interactive Map */}
-          <div className="lg:col-span-1">
-            <Card className="bg-card border-border sticky top-8">
-              <CardHeader>
-                <CardTitle className="text-white">Map View</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <MapView
-                  restaurants={filteredRestaurants}
-                  userLat={parseFloat(lat!)}
-                  userLng={parseFloat(lng!)}
-                  onRestaurantClick={(restaurant) => {
-                    // Scroll to restaurant card
-                    const element = document.getElementById(`restaurant-${restaurant.id}`);
-                    if (element) {
-                      element.scrollIntoView({ behavior: 'smooth' });
-                    }
-                  }}
-                />
-              </CardContent>
-            </Card>
           </div>
         </div>
       </div>
