@@ -36,9 +36,27 @@ export default function MapView({ restaurants, userLat, userLng, onRestaurantCli
       try {
         // Check if Google Maps is already loaded
         if (window.google && window.google.maps) {
+          console.log('Google Maps already loaded');
+          setMapLoaded(true);
           initializeMap();
           return;
         }
+
+        console.log('Loading Google Maps API...');
+        console.log('API Key:', process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ? 'Present' : 'Missing');
+        
+        // Check if API key is valid
+        if (!process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY === 'your_api_key_here') {
+          console.error('Invalid or missing Google Maps API key');
+          setMapError('Google Maps API key not configured');
+          return;
+        }
+        
+        // Set a timeout to prevent infinite loading
+        const timeout = setTimeout(() => {
+          console.error('Google Maps loading timeout');
+          setMapError('Google Maps failed to load - check your API key');
+        }, 10000); // 10 second timeout
 
         // Load Google Maps API
         const script = document.createElement('script');
@@ -47,12 +65,16 @@ export default function MapView({ restaurants, userLat, userLng, onRestaurantCli
         script.defer = true;
         
         script.onload = () => {
+          console.log('Google Maps script loaded successfully');
+          clearTimeout(timeout);
           setMapLoaded(true);
           initializeMap();
         };
         
-        script.onerror = () => {
-          setMapError('Failed to load Google Maps');
+        script.onerror = (error) => {
+          console.error('Failed to load Google Maps script:', error);
+          clearTimeout(timeout);
+          setMapError('Failed to load Google Maps API - check your API key');
         };
 
         document.head.appendChild(script);
