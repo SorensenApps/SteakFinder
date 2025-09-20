@@ -1,13 +1,16 @@
-const CACHE_NAME = 'steakfinder-v1';
-const STATIC_CACHE = 'steakfinder-static-v1';
-const DYNAMIC_CACHE = 'steakfinder-dynamic-v1';
+const CACHE_NAME = 'steakfinder-v2';
+const STATIC_CACHE = 'steakfinder-static-v2';
+const DYNAMIC_CACHE = 'steakfinder-dynamic-v2';
 
 // Static assets to cache
 const STATIC_ASSETS = [
   '/',
   '/manifest.json',
-  '/icon-192.svg',
-  '/icon-512.svg',
+  '/android-chrome-192x192.png',
+  '/android-chrome-512x512.png',
+  '/apple-touch-icon.png',
+  '/favicon-16x16.png',
+  '/favicon-32x32.png',
   '/favicon.ico',
   '/sw.js'
 ];
