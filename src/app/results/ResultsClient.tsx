@@ -317,29 +317,29 @@ export default function ResultsClient() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+      <div className="min-h-screen bg-white text-foreground flex items-center justify-center">
         <div className="text-center space-y-4">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-          <p className="text-muted-foreground">Finding steakhouses near you...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent mx-auto"></div>
+          <p className="text-secondary">Finding steakhouses near you...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-white text-foreground">
       {/* Header */}
       <header className="container mx-auto px-4 py-6 border-b border-border">
         <div className="flex items-center justify-between">
           <Button
             variant="ghost"
             onClick={() => router.push('/')}
-            className="text-white hover:bg-secondary"
+            className="text-foreground hover:bg-muted"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Home
           </Button>
-          <h1 className="text-2xl font-bold text-primary">SteakFinder Results</h1>
+          <h1 className="text-2xl font-bold font-serif text-primary">SteakFinder Results</h1>
           <div className="w-20"></div> {/* Spacer for centering */}
         </div>
       </header>
@@ -352,7 +352,7 @@ export default function ResultsClient() {
             <div className="flex flex-wrap gap-2">
               <Badge
                 variant={selectedType === 'all' ? 'default' : 'outline'}
-                className="cursor-pointer hover:bg-primary/10 flex items-center gap-1"
+                className="cursor-pointer hover:bg-accent/10 flex items-center gap-1"
                 onClick={() => setSelectedType('all')}
               >
                 {selectedType === 'all' && <Check className="h-3 w-3" />}
@@ -362,7 +362,7 @@ export default function ResultsClient() {
                 <Badge
                   key={type.key}
                   variant={selectedType === type.key ? 'default' : 'outline'}
-                  className="cursor-pointer hover:bg-primary/10 flex items-center gap-1"
+                  className="cursor-pointer hover:bg-accent/10 flex items-center gap-1"
                   onClick={() => setSelectedType(type.key)}
                 >
                   {selectedType === type.key && <Check className="h-3 w-3" />}
@@ -372,23 +372,23 @@ export default function ResultsClient() {
             </div>
 
             {/* Results Count */}
-            <p className="text-muted-foreground">
+            <p className="text-secondary">
               Found {filteredRestaurants.length} restaurant{filteredRestaurants.length !== 1 ? 's' : ''} within 10{filteredRestaurants[0]?.useMiles ? 'mi' : 'km'}
             </p>
 
             {/* Restaurant Cards */}
             <div className="space-y-4">
               {filteredRestaurants.map((restaurant) => (
-                <Card key={restaurant.id} id={`restaurant-${restaurant.id}`} className="bg-card border-border">
+                <Card key={restaurant.id} id={`restaurant-${restaurant.id}`} className="bg-white border border-border shadow-lg">
                   <CardHeader>
                     <div className="flex items-start justify-between">
                       <div>
-                        <CardTitle className="text-white text-xl">{restaurant.name}</CardTitle>
-                        <CardDescription className="text-muted-foreground mt-1">
+                        <CardTitle className="text-primary text-xl font-serif">{restaurant.name}</CardTitle>
+                        <CardDescription className="text-secondary mt-1">
                           <MapPin className="h-4 w-4 inline mr-1" />
                           {restaurant.vicinity}
                           {restaurant.distance && (
-                            <span className="ml-2 text-primary">
+                            <span className="ml-2 text-accent">
                               • {restaurant.distance.toFixed(1)}{restaurant.useMiles ? 'mi' : 'km'} away
                             </span>
                           )}
@@ -397,10 +397,10 @@ export default function ResultsClient() {
                       <div className="text-right">
                         <div className="flex items-center space-x-1">
                           <Star className="h-4 w-4 text-yellow-400 fill-current" />
-                          <span className="text-white font-medium">{restaurant.rating}</span>
+                          <span className="text-primary font-medium">{restaurant.rating}</span>
                         </div>
                         {restaurant.priceLevel && (
-                          <div className="text-muted-foreground text-sm mt-1">
+                          <div className="text-secondary text-sm mt-1">
                             {'$'.repeat(restaurant.priceLevel)}
                           </div>
                         )}
@@ -418,7 +418,7 @@ export default function ResultsClient() {
                       </div>
                       <Button
                         size="sm"
-                        className="bg-primary hover:bg-primary/90"
+                        className="bg-accent hover:bg-accent/90"
                         onClick={() => window.open(getDirectionsUrl(restaurant.placeId, restaurant.name), '_blank')}
                       >
                         <Navigation className="h-4 w-4 mr-2" />
@@ -430,9 +430,9 @@ export default function ResultsClient() {
               ))}
 
               {filteredRestaurants.length === 0 && (
-                <Card className="bg-card border-border">
+                <Card className="bg-white border border-border shadow-lg">
                   <CardContent className="text-center py-12">
-                    <p className="text-muted-foreground text-lg">
+                    <p className="text-secondary text-lg">
                       No restaurants found for the selected filter.
                     </p>
                     <Button
@@ -451,7 +451,7 @@ export default function ResultsClient() {
               <Card className="bg-destructive/10 border-destructive/20">
                 <CardContent className="py-4">
                   <p className="text-destructive">{error}</p>
-                  <p className="text-sm text-muted-foreground mt-2">
+                  <p className="text-sm text-secondary mt-2">
                     Showing sample data for demonstration purposes.
                   </p>
                 </CardContent>

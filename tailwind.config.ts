@@ -9,38 +9,38 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        background: "var(--background)",
-        foreground: "var(--foreground)",
+        background: "#FFFFFF",
+        foreground: "#111827",
         primary: {
-          DEFAULT: "#b22222", // Steak red
-          foreground: "#ffffff",
+          DEFAULT: "#111827", // Dark gray for primary text
+          foreground: "#FFFFFF",
         },
         secondary: {
-          DEFAULT: "#1f1f1f",
-          foreground: "#ffffff",
+          DEFAULT: "#6B7280", // Gray for secondary text
+          foreground: "#FFFFFF",
         },
         muted: {
-          DEFAULT: "#2a2a2a",
-          foreground: "#a1a1aa",
+          DEFAULT: "#F9FAFB",
+          foreground: "#6B7280",
         },
         accent: {
-          DEFAULT: "#b22222",
-          foreground: "#ffffff",
+          DEFAULT: "#00BFA6", // Teal-green accent
+          foreground: "#FFFFFF",
         },
         destructive: {
-          DEFAULT: "#ef4444",
-          foreground: "#ffffff",
+          DEFAULT: "#EF4444",
+          foreground: "#FFFFFF",
         },
-        border: "#404040",
-        input: "#404040",
-        ring: "#b22222",
+        border: "#E5E7EB",
+        input: "#E5E7EB",
+        ring: "#00BFA6",
         card: {
-          DEFAULT: "#1a1a1a",
-          foreground: "#ffffff",
+          DEFAULT: "#FFFFFF",
+          foreground: "#111827",
         },
         popover: {
-          DEFAULT: "#1a1a1a",
-          foreground: "#ffffff",
+          DEFAULT: "#FFFFFF",
+          foreground: "#111827",
         },
       },
       borderRadius: {
@@ -50,11 +50,11 @@ const config: Config = {
       },
       fontFamily: {
         sans: ["Inter", "system-ui", "sans-serif"],
+        serif: ["Merriweather", "Georgia", "serif"],
       },
     },
   },
   plugins: [],
-  darkMode: "class",
 };
 
 export default config;

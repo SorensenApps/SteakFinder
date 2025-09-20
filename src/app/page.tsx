@@ -53,12 +53,12 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-white text-foreground">
       {/* Header */}
       <header className="container mx-auto px-4 py-8">
         <div className="flex items-center justify-center space-x-3">
-          <Utensils className="h-8 w-8 text-primary" />
-          <h1 className="text-4xl font-bold text-primary">SteakFinder</h1>
+          <Utensils className="h-8 w-8 text-accent" />
+          <h1 className="text-4xl font-bold font-serif text-primary">SteakFinder</h1>
           <span className="text-4xl">🥩</span>
         </div>
       </header>
@@ -68,10 +68,10 @@ export default function Home() {
         <div className="max-w-2xl mx-auto text-center space-y-8">
           {/* Hero Section */}
           <div className="space-y-6">
-            <h2 className="text-5xl font-bold text-white">
-              Find Your Nearest <span className="text-primary">Steak Fix</span>
+            <h2 className="text-5xl font-bold font-serif text-primary">
+              Find Your Nearest <span className="text-accent">Steak Fix</span>
             </h2>
-            <p className="text-xl text-muted-foreground">
+            <p className="text-xl text-secondary">
               Discover steakhouses, Brazilian BBQ, Korean BBQ, Argentine grills, American BBQ, and more near you. 
               Perfect for your keto and carnivore lifestyle.
             </p>
@@ -83,7 +83,7 @@ export default function Home() {
               onClick={handleFindSteakhouses}
               disabled={isLoading}
               size="lg"
-              className="bg-primary hover:bg-primary/90 active:bg-primary/95 text-white px-16 py-8 text-xl font-bold rounded-2xl shadow-2xl border-2 border-primary/20 hover:border-primary/40 transition-all duration-300 transform hover:scale-105 active:scale-95 min-w-[320px]"
+              className="bg-accent hover:bg-accent/90 active:bg-accent/95 text-white px-16 py-8 text-xl font-bold rounded-2xl shadow-2xl border-2 border-accent/20 hover:border-accent/40 transition-all duration-300 transform hover:scale-105 active:scale-95 min-w-[320px]"
             >
               {isLoading ? (
                 <div className="flex items-center space-x-3">
@@ -101,43 +101,43 @@ export default function Home() {
 
           {/* Features */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-16">
-            <Card className="bg-card border-border">
+            <Card className="bg-white border border-border shadow-lg">
               <CardHeader className="text-center">
-                <div className="mx-auto w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
-                  <MapPin className="h-6 w-6 text-primary" />
+                <div className="mx-auto w-12 h-12 bg-accent/10 rounded-full flex items-center justify-center mb-4">
+                  <MapPin className="h-6 w-6 text-accent" />
                 </div>
-                <CardTitle className="text-white">Location-Based</CardTitle>
+                <CardTitle className="text-primary font-serif">Location-Based</CardTitle>
               </CardHeader>
               <CardContent>
-                <CardDescription className="text-muted-foreground">
+                <CardDescription className="text-secondary">
                   Find the closest steakhouses using your GPS location for accurate results.
                 </CardDescription>
               </CardContent>
             </Card>
 
-            <Card className="bg-card border-border">
+            <Card className="bg-white border border-border shadow-lg">
               <CardHeader className="text-center">
-                <div className="mx-auto w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
-                  <Utensils className="h-6 w-6 text-primary" />
+                <div className="mx-auto w-12 h-12 bg-accent/10 rounded-full flex items-center justify-center mb-4">
+                  <Utensils className="h-6 w-6 text-accent" />
                 </div>
-                <CardTitle className="text-white">Diverse Options</CardTitle>
+                <CardTitle className="text-primary font-serif">Diverse Options</CardTitle>
               </CardHeader>
               <CardContent>
-                <CardDescription className="text-muted-foreground">
+                <CardDescription className="text-secondary">
                   From traditional steakhouses to Brazilian BBQ, Korean BBQ, and American BBQ - we&apos;ve got you covered.
                 </CardDescription>
               </CardContent>
             </Card>
 
-            <Card className="bg-card border-border">
+            <Card className="bg-white border border-border shadow-lg">
               <CardHeader className="text-center">
-                <div className="mx-auto w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
-                  <Navigation className="h-6 w-6 text-primary" />
+                <div className="mx-auto w-12 h-12 bg-accent/10 rounded-full flex items-center justify-center mb-4">
+                  <Navigation className="h-6 w-6 text-accent" />
                 </div>
-                <CardTitle className="text-white">Easy Navigation</CardTitle>
+                <CardTitle className="text-primary font-serif">Easy Navigation</CardTitle>
               </CardHeader>
               <CardContent>
-                <CardDescription className="text-muted-foreground">
+                <CardDescription className="text-secondary">
                   Get directions instantly with integrated Google Maps navigation.
                 </CardDescription>
               </CardContent>
@@ -148,13 +148,13 @@ export default function Home() {
 
       {/* Footer */}
       <footer className="container mx-auto px-4 py-8 mt-16 border-t border-border">
-        <div className="text-center text-muted-foreground">
+        <div className="text-center text-secondary">
           <p className="mb-4">Part of the TravelKeto.ai family</p>
           <a 
             href="https://travelketo.ai" 
             target="_blank" 
             rel="noopener noreferrer"
-            className="text-primary hover:underline"
+            className="text-accent hover:underline"
           >
             Visit TravelKeto.ai →
           </a>

@@ -1,26 +1,27 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700;900&display=swap');
 @import "tailwindcss";
 
 :root {
-  --background: #000000;
-  --foreground: #ffffff;
-  --primary: #b22222;
-  --primary-foreground: #ffffff;
-  --secondary: #1f1f1f;
-  --secondary-foreground: #ffffff;
-  --muted: #2a2a2a;
-  --muted-foreground: #a1a1aa;
-  --accent: #b22222;
-  --accent-foreground: #ffffff;
-  --destructive: #ef4444;
-  --destructive-foreground: #ffffff;
-  --border: #404040;
-  --input: #404040;
-  --ring: #b22222;
-  --card: #1a1a1a;
-  --card-foreground: #ffffff;
-  --popover: #1a1a1a;
-  --popover-foreground: #ffffff;
+  --background: #FFFFFF;
+  --foreground: #111827;
+  --primary: #111827;
+  --primary-foreground: #FFFFFF;
+  --secondary: #6B7280;
+  --secondary-foreground: #FFFFFF;
+  --muted: #F9FAFB;
+  --muted-foreground: #6B7280;
+  --accent: #00BFA6;
+  --accent-foreground: #FFFFFF;
+  --destructive: #EF4444;
+  --destructive-foreground: #FFFFFF;
+  --border: #E5E7EB;
+  --input: #E5E7EB;
+  --ring: #00BFA6;
+  --card: #FFFFFF;
+  --card-foreground: #111827;
+  --popover: #FFFFFF;
+  --popover-foreground: #111827;
 }
 
 * {
