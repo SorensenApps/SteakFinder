@@ -79,11 +79,10 @@ export default function Home() {
 
           {/* CTA Button */}
           <div className="py-8">
-            <Button
+            <button
               onClick={handleFindSteakhouses}
               disabled={isLoading}
-              size="lg"
-              className="bg-accent hover:bg-accent/90 active:bg-accent/95 text-white px-16 py-8 text-xl font-bold rounded-2xl shadow-2xl border-2 border-accent/20 hover:border-accent/40 transition-all duration-300 transform hover:scale-105 active:scale-95 min-w-[320px] !text-white"
+              className="bg-accent hover:bg-accent/90 active:bg-accent/95 text-white px-16 py-8 text-xl font-bold rounded-2xl shadow-2xl border-2 border-accent/20 hover:border-accent/40 transition-all duration-300 transform hover:scale-105 active:scale-95 min-w-[320px] disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-center gap-2 whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
             >
               {isLoading ? (
                 <div className="flex items-center space-x-3">
@@ -96,7 +95,7 @@ export default function Home() {
                   <span className="text-xl text-white">Find Steakhouses Near Me</span>
                 </div>
               )}
-            </Button>
+            </button>
           </div>
 
           {/* Features */}
