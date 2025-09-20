@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { MapPin, Utensils, Navigation } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import Footer from '@/components/Footer';
 
 export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
@@ -178,20 +179,7 @@ export default function Home() {
         </div>
       </main>
 
-      {/* Footer */}
-      <footer className="container mx-auto px-4 py-8 mt-16 border-t border-border">
-        <div className="text-center text-secondary">
-          <p className="mb-4">Part of the TravelKeto.ai family</p>
-          <a 
-            href="https://travelketo.ai" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="text-accent hover:underline"
-          >
-            Visit TravelKeto.ai →
-          </a>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }

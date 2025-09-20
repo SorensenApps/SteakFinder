@@ -3,6 +3,7 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft, ExternalLink, Heart, Globe, Zap } from 'lucide-react';
+import Footer from '@/components/Footer';
 import { useRouter } from 'next/navigation';
 
 export default function AboutPage() {
@@ -200,6 +201,8 @@ export default function AboutPage() {
           </div>
         </div>
       </main>
+      
+      <Footer />
     </div>
   );
 }

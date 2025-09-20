@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, MapPin, Navigation, Star, Check } from 'lucide-react';
+import Footer from '@/components/Footer';
 
 interface Restaurant {
   id: string;
@@ -460,6 +461,8 @@ export default function ResultsClient() {
           </div>
         </div>
       </div>
+      
+      <Footer />
     </div>
   );
 }
