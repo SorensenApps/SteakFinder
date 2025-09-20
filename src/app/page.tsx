@@ -83,17 +83,17 @@ export default function Home() {
               onClick={handleFindSteakhouses}
               disabled={isLoading}
               size="lg"
-              className="bg-accent hover:bg-accent/90 active:bg-accent/95 text-white px-16 py-8 text-xl font-bold rounded-2xl shadow-2xl border-2 border-accent/20 hover:border-accent/40 transition-all duration-300 transform hover:scale-105 active:scale-95 min-w-[320px]"
+              className="bg-accent hover:bg-accent/90 active:bg-accent/95 text-white px-16 py-8 text-xl font-bold rounded-2xl shadow-2xl border-2 border-accent/20 hover:border-accent/40 transition-all duration-300 transform hover:scale-105 active:scale-95 min-w-[320px] !text-white"
             >
               {isLoading ? (
                 <div className="flex items-center space-x-3">
                   <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
-                  <span className="text-xl">Finding Steakhouses...</span>
+                  <span className="text-xl text-white">Finding Steakhouses...</span>
                 </div>
               ) : (
                 <div className="flex items-center space-x-3">
-                  <MapPin className="h-6 w-6" />
-                  <span className="text-xl">Find Steakhouses Near Me</span>
+                  <MapPin className="h-6 w-6 text-white" />
+                  <span className="text-xl text-white">Find Steakhouses Near Me</span>
                 </div>
               )}
             </Button>

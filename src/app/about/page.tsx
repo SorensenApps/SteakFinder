@@ -104,10 +104,10 @@ export default function AboutPage() {
               <div className="space-y-4">
                 <Button
                   size="lg"
-                  className="bg-accent hover:bg-accent/90 text-white px-8 py-6 text-lg font-semibold"
+                  className="bg-accent hover:bg-accent/90 text-white px-8 py-6 text-lg font-semibold !text-white"
                   onClick={() => window.open('https://travelketo.ai', '_blank')}
                 >
-                  <ExternalLink className="h-5 w-5 mr-2" />
+                  <ExternalLink className="h-5 w-5 mr-2 text-white" />
                   Visit TravelKeto.ai
                 </Button>
                 
@@ -193,7 +193,7 @@ export default function AboutPage() {
             <Button
               size="lg"
               onClick={() => router.push('/')}
-              className="bg-accent hover:bg-accent/90 text-white px-8 py-6 text-lg font-semibold"
+              className="bg-accent hover:bg-accent/90 text-white px-8 py-6 text-lg font-semibold !text-white"
             >
               Find Steakhouses Near Me
             </Button>
