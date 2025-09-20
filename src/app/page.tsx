@@ -82,17 +82,50 @@ export default function Home() {
             <button
               onClick={handleFindSteakhouses}
               disabled={isLoading}
-              className="bg-accent hover:bg-accent/90 active:bg-accent/95 text-white px-16 py-8 text-xl font-bold rounded-2xl shadow-2xl border-2 border-accent/20 hover:border-accent/40 transition-all duration-300 transform hover:scale-105 active:scale-95 min-w-[320px] disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-center gap-2 whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+              style={{
+                backgroundColor: '#00BFA6',
+                color: '#FFFFFF',
+                border: '2px solid rgba(0, 191, 166, 0.2)',
+                borderRadius: '16px',
+                padding: '32px 64px',
+                fontSize: '20px',
+                fontWeight: 'bold',
+                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+                minWidth: '320px',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '12px',
+                transition: 'all 0.3s ease',
+                cursor: 'pointer',
+                opacity: isLoading ? 0.5 : 1,
+                pointerEvents: isLoading ? 'none' : 'auto'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = 'rgba(0, 191, 166, 0.9)';
+                e.currentTarget.style.transform = 'scale(1.05)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = '#00BFA6';
+                e.currentTarget.style.transform = 'scale(1)';
+              }}
             >
               {isLoading ? (
-                <div className="flex items-center space-x-3">
-                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
-                  <span className="text-xl text-white">Finding Steakhouses...</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div style={{
+                    width: '24px',
+                    height: '24px',
+                    border: '2px solid #FFFFFF',
+                    borderTop: '2px solid transparent',
+                    borderRadius: '50%',
+                    animation: 'spin 1s linear infinite'
+                  }}></div>
+                  <span style={{ color: '#FFFFFF', fontSize: '20px' }}>Finding Steakhouses...</span>
                 </div>
               ) : (
-                <div className="flex items-center space-x-3">
-                  <MapPin className="h-6 w-6 text-white" />
-                  <span className="text-xl text-white">Find Steakhouses Near Me</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <MapPin style={{ width: '24px', height: '24px', color: '#FFFFFF' }} />
+                  <span style={{ color: '#FFFFFF', fontSize: '20px' }}>Find Steakhouses Near Me</span>
                 </div>
               )}
             </button>
