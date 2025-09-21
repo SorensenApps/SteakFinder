@@ -69,6 +69,19 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="SteakFinder" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        
+        {/* Google Analytics */}
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-M2E8L0GR5E"></script>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', 'G-M2E8L0GR5E');
+            `,
+          }}
+        />
       </head>
       <body className={`${inter.className} antialiased bg-white text-foreground`}>
         {children}
