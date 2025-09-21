@@ -39,11 +39,20 @@ export const metadata: Metadata = {
     siteName: "SteakFinder",
     title: "SteakFinder - Find Your Nearest Steak Fix",
     description: "Discover steakhouses, Brazilian BBQ, Korean BBQ, and more near you.",
+    images: [
+      {
+        url: "/android-chrome-512x512.png",
+        width: 512,
+        height: 512,
+        alt: "SteakFinder - Find Your Nearest Steak Fix",
+      },
+    ],
   },
   twitter: {
-    card: "summary",
+    card: "summary_large_image",
     title: "SteakFinder - Find Your Nearest Steak Fix",
     description: "Discover steakhouses, Brazilian BBQ, Korean BBQ, and more near you.",
+    images: ["/android-chrome-512x512.png"],
   },
 };
 
