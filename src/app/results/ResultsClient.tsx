@@ -419,7 +419,7 @@ export default function ResultsClient() {
                       </div>
                       <Button
                         size="sm"
-                        className="bg-accent hover:bg-accent/90 text-white font-medium"
+                        className="bg-gray-900 hover:bg-gray-800 text-white font-medium shadow-sm"
                         onClick={() => window.open(getDirectionsUrl(restaurant.placeId, restaurant.name), '_blank')}
                       >
                         <Navigation className="h-4 w-4 mr-2" />
