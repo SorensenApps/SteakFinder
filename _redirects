@@ -1,0 +1,6 @@
+# API redirects - handled by Pages Functions
+/api/places /api/places 200
+
+# SPA fallback
+/* /index.html 200
+

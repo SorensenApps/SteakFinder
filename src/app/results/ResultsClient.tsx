@@ -5,7 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, MapPin, Navigation, Star, Check } from 'lucide-react';
+import { ArrowLeft, MapPin, Navigation, Star, Check, ExternalLink } from 'lucide-react';
 import Footer from '@/components/Footer';
 
 interface Restaurant {
@@ -25,6 +25,11 @@ interface Restaurant {
     openNow: boolean;
     weekdayText: string[];
   };
+  currentOpeningHours?: {
+    openNow: boolean;
+    weekdayText: string[];
+  };
+  websiteUri?: string;
   formattedPhoneNumber?: string;
 }
 
@@ -46,6 +51,11 @@ interface GooglePlaceNew {
   };
   lat?: number;
   lng?: number;
+  currentOpeningHours?: {
+    openNow: boolean;
+    weekdayText: string[];
+  };
+  websiteUri?: string;
 }
 
 const restaurantTypes = [
@@ -93,6 +103,7 @@ export default function ResultsClient() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedType, setSelectedType] = useState<string>('all');
+  const [loadingProgress, setLoadingProgress] = useState<string>('Initializing search...');
 
   const lat = searchParams.get('lat');
   const lng = searchParams.get('lng');
@@ -102,27 +113,36 @@ export default function ResultsClient() {
       setLoading(true);
       setError(null);
 
-      // Check if we have a Google Maps API key
-      const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
-      console.log('API Key found:', !!apiKey);
-      console.log('API Key value:', apiKey ? 'Present' : 'Missing');
-      
-      if (!apiKey || apiKey === 'your_api_key_here' || apiKey.length < 20) {
-        console.log('Using mock data - no valid API key provided');
-        // Use mock data if no API key
-        setRestaurants(getMockRestaurants());
-        setLoading(false);
-        return;
+      // Check cache first
+      const cacheKey = `restaurants_${lat}_${lng}`;
+      const cachedData = localStorage.getItem(cacheKey);
+      if (cachedData) {
+        const { data, timestamp } = JSON.parse(cachedData);
+        // Cache valid for 10 minutes
+        if (Date.now() - timestamp < 10 * 60 * 1000) {
+          console.log('Using cached restaurant data');
+          setLoadingProgress('Loading cached results...');
+          setRestaurants(data);
+          setLoading(false);
+          return;
+        }
       }
 
-      // Use Google Places API
-      const restaurants = await searchNearbyRestaurants(parseFloat(lat!), parseFloat(lng!), apiKey);
+      setLoadingProgress('Finding restaurants nearby...');
+      
+      // Use Google Places API through secure server function
+      const restaurants = await searchNearbyRestaurants(parseFloat(lat!), parseFloat(lng!));
+      setLoadingProgress('Processing results...');
       setRestaurants(restaurants);
+      
+      // Cache the results
+      localStorage.setItem(cacheKey, JSON.stringify({
+        data: restaurants,
+        timestamp: Date.now()
+      }));
     } catch (err) {
       console.error('Error fetching restaurants:', err);
-      setError('Failed to load restaurants. Using sample data instead.');
-      // Fallback to mock data
-      setRestaurants(getMockRestaurants());
+      setError('Failed to load restaurants. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -137,14 +157,13 @@ export default function ResultsClient() {
     fetchRestaurants();
   }, [lat, lng, router, fetchRestaurants]);
 
-  const searchNearbyRestaurants = async (latitude: number, longitude: number, _apiKey: string): Promise<Restaurant[]> => {
+  const searchNearbyRestaurants = async (latitude: number, longitude: number): Promise<Restaurant[]> => {
     const searchTerms = ['steakhouse', 'brazilian bbq', 'korean bbq', 'argentine grill', 'american bbq'];
-    const allRestaurants: Restaurant[] = [];
-
-    for (const term of searchTerms) {
+    
+    // Make all API calls in parallel instead of sequentially
+    console.log('Making parallel requests to Places (New) API via server route');
+    const apiCalls = searchTerms.map(async (term) => {
       try {
-        // Use our server-side API route to call Places (New) API
-        console.log('Making request to Places (New) API via server route');
         const response = await fetch('/api/places', {
           method: 'POST',
           headers: {
@@ -162,10 +181,10 @@ export default function ResultsClient() {
         }
         
         const data = await response.json();
-        console.log('Google Places (New) API response:', data);
+        console.log(`Google Places (New) API response for ${term}:`, data);
         
         if (data.places && data.places.length > 0) {
-          const restaurants = data.places.map((place: GooglePlaceNew) => ({
+          return data.places.map((place: GooglePlaceNew) => ({
             id: place.id || place.place_id,
             name: place.displayName?.text || place.name,
             rating: place.rating || 0,
@@ -176,30 +195,40 @@ export default function ResultsClient() {
             photos: place.photos || [],
             lat: place.location?.latitude || place.lat,
             lng: place.location?.longitude || place.lng,
+            currentOpeningHours: place.currentOpeningHours,
+            websiteUri: place.websiteUri,
           }));
-          
-          allRestaurants.push(...restaurants);
         } else if (data.error) {
           console.error('Google Places (New) API error:', data.error);
           throw new Error(`API error: ${data.error.message || 'Unknown error'}`);
         } else {
           console.warn('No places found for term:', term);
+          return [];
         }
       } catch (err) {
         console.error(`Error searching for ${term}:`, err);
-        // If it's a network error or API error, we'll fall back to mock data
-        throw err;
+        // Return empty array for failed searches instead of throwing
+        return [];
       }
-    }
+    });
+
+    // Wait for all API calls to complete
+    const results = await Promise.all(apiCalls);
+    const allRestaurants = results.flat();
 
     // Remove duplicates
     const uniqueRestaurants = allRestaurants.filter((restaurant, index, self) => 
       index === self.findIndex(r => r.placeId === restaurant.placeId)
     );
 
+    // Filter to only show restaurants that are currently open
+    const openRestaurants = uniqueRestaurants.filter(restaurant => 
+      restaurant.currentOpeningHours?.openNow === true
+    );
+
     // Calculate distance and sort by distance, then limit to 10
     const useMiles = isMilesCountry(latitude, longitude);
-    const restaurantsWithDistance = uniqueRestaurants.map(restaurant => {
+    const restaurantsWithDistance = openRestaurants.map(restaurant => {
       if (restaurant.lat && restaurant.lng) {
         const distanceKm = calculateDistance(latitude, longitude, restaurant.lat, restaurant.lng);
         const distance = useMiles ? kmToMiles(distanceKm) : distanceKm;
@@ -321,7 +350,8 @@ export default function ResultsClient() {
       <div className="min-h-screen bg-white text-foreground flex items-center justify-center">
         <div className="text-center space-y-4">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent mx-auto"></div>
-          <p className="text-secondary">Finding steakhouses near you...</p>
+          <p className="text-secondary">{loadingProgress}</p>
+          <p className="text-sm text-secondary/70">Searching multiple restaurant types in parallel...</p>
         </div>
       </div>
     );
@@ -330,30 +360,34 @@ export default function ResultsClient() {
   return (
     <div className="min-h-screen bg-white text-foreground">
       {/* Header */}
-      <header className="container mx-auto px-4 py-6 border-b border-border">
+      <header className="container mx-auto px-4 py-4 sm:py-6 border-b border-border">
         <div className="flex items-center justify-between">
           <Button
             variant="ghost"
             onClick={() => router.push('/')}
-            className="text-foreground hover:bg-muted"
+            className="text-foreground hover:bg-muted text-sm sm:text-base"
           >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Home
+            <ArrowLeft className="h-4 w-4 mr-1 sm:mr-2" />
+            <span className="hidden sm:inline">Back to Home</span>
+            <span className="sm:hidden">Back</span>
           </Button>
-          <h1 className="text-2xl font-bold font-serif text-primary">SteakFinder Results</h1>
-          <div className="w-20"></div> {/* Spacer for centering */}
+          <h1 className="text-lg sm:text-2xl font-bold font-serif text-primary text-center flex-1 mx-4">
+            <span className="hidden sm:inline">SteakFinder Results</span>
+            <span className="sm:hidden">Results</span>
+          </h1>
+          <div className="w-16 sm:w-20"></div> {/* Spacer for centering */}
         </div>
       </header>
 
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-4 sm:py-8">
         <div className="max-w-4xl mx-auto">
           {/* Filters and Results */}
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             {/* Filter Chips */}
             <div className="flex flex-wrap gap-2">
               <Badge
                 variant={selectedType === 'all' ? 'default' : 'outline'}
-                className="cursor-pointer hover:bg-accent/10 flex items-center gap-1"
+                className="cursor-pointer hover:bg-accent/10 flex items-center gap-1 text-xs sm:text-sm px-2 sm:px-3 py-1 sm:py-1.5"
                 onClick={() => setSelectedType('all')}
               >
                 {selectedType === 'all' && <Check className="h-3 w-3" />}
@@ -363,68 +397,92 @@ export default function ResultsClient() {
                 <Badge
                   key={type.key}
                   variant={selectedType === type.key ? 'default' : 'outline'}
-                  className="cursor-pointer hover:bg-accent/10 flex items-center gap-1"
+                  className="cursor-pointer hover:bg-accent/10 flex items-center gap-1 text-xs sm:text-sm px-2 sm:px-3 py-1 sm:py-1.5"
                   onClick={() => setSelectedType(type.key)}
                 >
                   {selectedType === type.key && <Check className="h-3 w-3" />}
-                  {type.icon} {type.label}
+                  <span className="hidden sm:inline">{type.icon} {type.label}</span>
+                  <span className="sm:hidden">{type.icon}</span>
                 </Badge>
               ))}
             </div>
 
             {/* Results Count */}
-            <p className="text-secondary">
-              Found {filteredRestaurants.length} restaurant{filteredRestaurants.length !== 1 ? 's' : ''} within 10{filteredRestaurants[0]?.useMiles ? 'mi' : 'km'}
+            <p className="text-secondary text-sm sm:text-base">
+              Found {filteredRestaurants.length} open restaurant{filteredRestaurants.length !== 1 ? 's' : ''} within 10{filteredRestaurants[0]?.useMiles ? 'mi' : 'km'}
             </p>
 
             {/* Restaurant Cards */}
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               {filteredRestaurants.map((restaurant) => (
                 <Card key={restaurant.id} id={`restaurant-${restaurant.id}`} className="bg-white border border-border shadow-lg">
-                  <CardHeader>
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <CardTitle className="text-primary text-xl font-serif">{restaurant.name}</CardTitle>
-                        <CardDescription className="text-secondary mt-1">
-                          <MapPin className="h-4 w-4 inline mr-1" />
-                          {restaurant.vicinity}
+                  <CardHeader className="pb-3 sm:pb-4">
+                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                      <div className="flex-1">
+                        <CardTitle className="text-primary text-lg sm:text-xl font-serif mb-2">{restaurant.name}</CardTitle>
+                        <CardDescription className="text-secondary text-sm">
+                          <div className="flex items-start gap-1">
+                            <MapPin className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                            <span className="break-words">{restaurant.vicinity}</span>
+                          </div>
                           {restaurant.distance && (
-                            <span className="ml-2 text-accent">
-                              • {restaurant.distance.toFixed(1)}{restaurant.useMiles ? 'mi' : 'km'} away
+                            <span className="block text-accent mt-1">
+                              {restaurant.distance.toFixed(1)}{restaurant.useMiles ? 'mi' : 'km'} away
                             </span>
                           )}
                         </CardDescription>
                       </div>
-                      <div className="text-right">
+                      <div className="flex items-center justify-between sm:flex-col sm:items-end gap-2">
                         <div className="flex items-center space-x-1">
                           <Star className="h-4 w-4 text-yellow-400 fill-current" />
-                          <span className="text-primary font-medium">{restaurant.rating}</span>
+                          <span className="text-primary font-medium text-sm sm:text-base">{restaurant.rating}</span>
                         </div>
                         {restaurant.priceLevel && (
-                          <div className="text-secondary text-sm mt-1">
+                          <div className="text-secondary text-sm">
                             {'$'.repeat(restaurant.priceLevel)}
                           </div>
                         )}
                       </div>
                     </div>
                   </CardHeader>
-                  <CardContent>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-4">
-                        <Badge variant="secondary">
+                  <CardContent className="pt-0">
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Badge variant="secondary" className="text-xs">
                           {restaurantTypes.find(t => t.key === getRestaurantType(restaurant.types))?.icon} 
                           {' '}
-                          {restaurantTypes.find(t => t.key === getRestaurantType(restaurant.types))?.label || 'Steakhouse'}
+                          <span className="hidden sm:inline">{restaurantTypes.find(t => t.key === getRestaurantType(restaurant.types))?.label || 'Steakhouse'}</span>
+                          <span className="sm:hidden">{restaurantTypes.find(t => t.key === getRestaurantType(restaurant.types))?.label || 'Steakhouse'}</span>
                         </Badge>
+                        {restaurant.currentOpeningHours?.openNow && (
+                          <Badge variant="default" className="bg-green-500 hover:bg-green-600 text-xs">
+                            Open Now
+                          </Badge>
+                        )}
                       </div>
-                      <Button
-                        size="sm"
-                        className="bg-gray-900 hover:bg-gray-800 text-white font-medium shadow-sm"
-                        onClick={() => window.open(getDirectionsUrl(restaurant.placeId, restaurant.name), '_blank')}
-                      >
-                        <Navigation className="h-4 w-4 mr-2" />
-                        Directions
-                      </Button>
+                      <div className="flex items-center gap-2">
+                        {restaurant.websiteUri && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="border-teal-500 text-teal-500 hover:bg-teal-50 text-xs sm:text-sm px-3 sm:px-4"
+                            onClick={() => window.open(restaurant.websiteUri, '_blank')}
+                          >
+                            <ExternalLink className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                            <span className="hidden sm:inline">Website</span>
+                            <span className="sm:hidden">Web</span>
+                          </Button>
+                        )}
+                        <Button
+                          size="sm"
+                          className="bg-gray-900 hover:bg-gray-800 text-white font-medium shadow-sm text-xs sm:text-sm px-3 sm:px-4"
+                          onClick={() => window.open(getDirectionsUrl(restaurant.placeId, restaurant.name), '_blank')}
+                        >
+                          <Navigation className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                          <span className="hidden sm:inline">Directions</span>
+                          <span className="sm:hidden">Go</span>
+                        </Button>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>

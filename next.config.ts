@@ -13,6 +13,13 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
+  // Cloudflare Pages specific configuration
+  experimental: {
+    // Ensure compatibility with Cloudflare Pages
+    esmExternals: false,
+  },
+  // Ensure proper static export for Cloudflare Pages
+  assetPrefix: process.env.NODE_ENV === 'production' ? '' : '',
 };
 
 export default nextConfig;
